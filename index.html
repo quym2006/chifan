@@ -1,0 +1,124 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>哪儿吃</title>
+
+    <link href="style.css" rel="stylesheet" type="text/css">
+    <link rel="shorticon icon" type="image/x-icon" href="images/favicon.ico">
+
+    <script type="text/javascript" src="http://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript" src="js/awardRotate.js"></script>
+
+    <script type="text/javascript">
+        var turnplate = {
+            restaraunts: [],
+            colors: [],
+            outsideRadius: 192,
+            textRadius: 155,
+            insideRadius: 68,
+            startAngle: 0,
+
+            bRotate: false
+        };
+
+        $(document).ready(function () {
+            turnplate.restaraunts = ["马华拉面", "顺口溜", "一品小笼", "绿茶", "大骨", "潇湘阁"];
+            turnplate.colors = ["#FFF4D6", "#FFFFFF", "#FFF4D6", "#FFFFFF", "#FFF4D6", "#FFFFFF", "#FFF4D6", "#FFFFFF", "#FFF4D6", "#FFFFFF"];
+
+
+            var rotateTimeOut = function () {
+                $('#wheelcanvas').rotate({
+                    angle: 0,
+                    animateTo: 2160,
+                    duration: 8000,
+                    callback: function () {
+                        alert('网络超时，请检查您的网络设置！');
+                    }
+                });
+            };
+
+
+            var rotateFn = function (item, txt) {
+                var angles = item * (360 / turnplate.restaraunts.length) - (360 / (turnplate.restaraunts.length * 2));
+                if (angles < 270) {
+                    angles = 270 - angles;
+                } else {
+                    angles = 360 - angles + 270;
+                }
+                $('#wheelcanvas').stopRotate();
+                $('#wheelcanvas').rotate({
+                    angle: 0,
+                    animateTo: angles + 1800,
+                    duration: 8000,
+                    callback: function () {
+                        alert(txt);
+                        turnplate.bRotate = !turnplate.bRotate;
+                    }
+                });
+            };
+
+            $('.pointer').click(function () {
+                if (turnplate.bRotate)return;
+                turnplate.bRotate = !turnplate.bRotate;
+                // 随机选择
+                var item = rnd(1, turnplate.restaraunts.length);
+                rotateFn(item, turnplate.restaraunts[item - 1]);
+                console.log(item);
+            });
+        });
+
+        function rnd(n, m) {
+            var random = Math.floor(Math.random() * (m - n + 1) + n);
+            return random;
+
+        }
+
+
+        window.onload = function () {
+            drawRouletteWheel();
+        };
+
+        function drawRouletteWheel() {
+            var canvas = document.getElementById("wheelcanvas");
+            if (canvas.getContext) {
+                var arc = Math.PI / (turnplate.restaraunts.length / 2);
+                var ctx = canvas.getContext("2d");
+                ctx.clearRect(0, 0, 422, 422);
+                ctx.strokeStyle = "#FFBE04";
+                ctx.font = '16px Microsoft YaHei';
+                for (var i = 0; i < turnplate.restaraunts.length; i++) {
+                    var angle = turnplate.startAngle + i * arc;
+                    ctx.fillStyle = turnplate.colors[i];
+                    ctx.beginPath();
+                    ctx.arc(211, 211, turnplate.outsideRadius, angle, angle + arc, false);
+                    ctx.arc(211, 211, turnplate.insideRadius, angle + arc, angle, true);
+                    ctx.stroke();
+                    ctx.fill();
+                    ctx.save();
+                    // 画item
+                    ctx.fillStyle = "#E5302F";
+                    var text = turnplate.restaraunts[i];
+                    ctx.translate(211 + Math.cos(angle + arc / 2) * turnplate.textRadius, 211 + Math.sin(angle + arc / 2) * turnplate.textRadius);
+                    ctx.rotate(angle + arc / 2 + Math.PI / 2);
+                    ctx.fillText(text, -ctx.measureText(text).width / 2, 0);
+                    //把当前画布返回（调整）到上一个save()状态之前
+                    ctx.restore();
+                }
+            }
+        }
+
+    </script>
+</head>
+<body style="background:#e62d2d;overflow-x:hidden;">
+<div class="banner">
+    <div class="turnplate" style="background-image:url(images/turnplate-bg.png);background-size:100% 100%;">
+        <canvas class="item" id="wheelcanvas" width="422px" height="422px"></canvas>
+        <img class="pointer" src="images/turnplate-pointer.png"/>
+    </div>
+</div>
+</body>
+</html>
